@@ -120,6 +120,7 @@
             @check-change="treeCheckChange"
             :default-expanded-keys="defaultExpandedKeys"
             accordion
+            :check-strictly=true
           >
             <span class="custom-tree-node" slot-scope="{ node, data }">
               <span>
@@ -476,6 +477,7 @@ export default {
     // 修改角色的权限
     handelSaveRolePermission() {
       let permissionIds = this.$refs.tree.getCheckedKeys(false);
+       permissionIds.push(1);
       this.$http
         .put("/api/rest/role/" + this.addForm.id + "/permission", permissionIds)
         .then(res => {

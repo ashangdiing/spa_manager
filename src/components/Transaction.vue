@@ -11,23 +11,42 @@
     <!-- 卡片视图区域 -->
     <el-card class="box-card">
       <el-row :gutter="10" class="search">
-        <el-col :span="10">
-          <!-- 搜索框 -->
-          <el-input placeholder="请输入内容" clearable v-model="queryParams.queryString">
-            <el-button slot="append" icon="el-icon-search"></el-button>
-          </el-input>
-        </el-col>
-
+        
+         
         <!-- //显示所有用户 -->
 
         <el-col :span="10">交易类型
           <el-radio-group v-model="queryParams.type" size="mini" @change="changeStatus">
             <el-radio-button label="显示所有"></el-radio-button>
             <el-radio-button label="会员卡"></el-radio-button>
-            <el-radio-button label="现金消费"></el-radio-button>
-            <el-radio-button label="日常支出"></el-radio-button>
+            <el-radio-button label="现金"></el-radio-button>
+             <el-radio-button label="支付宝"></el-radio-button>
+              <el-radio-button label="微信"></el-radio-button>
+            <el-radio-button label="美团"></el-radio-button>
+             <el-radio-button label="携程"></el-radio-button>
+            <el-radio-button label="支出"></el-radio-button>
           </el-radio-group>
         </el-col>
+
+      <el-col :span="3">
+          <!-- 搜索框 -->
+          <el-select
+            v-model="queryParams.serviceName"
+            :multiple="false"
+            default-first-option
+            placeholder="请选择项目名称"
+        clearable 
+          allow-create
+          >
+            <el-option
+              v-for="item in allServicePriceOptions"
+              :key="item.id"
+              :label="item.serviceName"
+              :value="item.serviceName"
+            ></el-option>
+          </el-select>
+        </el-col>
+
         <!-- 添加支出 -->
         <el-col :span="3">
           <el-button type="primary" @click="handelDialogAddVisibleShow()">添加支出</el-button>
@@ -35,9 +54,93 @@
       </el-row>
       <!-- 工具区 -->
       <el-row class="tools">
-        <el-col :span="2">
-          <el-button type="danger">删除选中</el-button>
+         <el-col :span="8">
+          <el-date-picker
+            v-model="dateTimeValue"
+            align="right"
+            type="datetimerange"
+            range-separator="至"
+            placeholder="选择日期"
+            :picker-options="dateTimePickerOptions"
+            format="yyyy年MM月dd日 HH时mm分ss秒"
+            value-format="yyyy-MM-dd HH:mm:ss"
+             start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :default-time="['00:00:00', '23:59:59']"
+            @change="changeDateTimeChange"
+          ></el-date-picker>
         </el-col>
+
+         <el-col :span="2">
+                <el-select
+                  v-model="queryParams.employeePercentageType"
+                  :multiple="false"
+                  filterable
+                  allow-create
+                  default-first-option
+                  placeholder="提成类别"
+                  clearable 
+                >
+                  <el-option
+                    v-for="item in employeePercentageTypeOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+            </el-col>
+
+            <el-col :span="3">
+           <el-select
+              v-model="queryParams.customerId"
+              :multiple="false"
+              allow-create
+              clearable
+              default-first-option
+              placeholder="请选择客户的手机号码"
+            >
+              <el-option
+                v-for="item in customerOptions"
+                :key="item.id"
+                :label="item.phone"
+                :value="item.id"
+              ></el-option>
+            </el-select>
+        </el-col>
+
+
+         <!-- 技师 -->
+        <el-col :span="3">
+          <el-select
+            v-model="queryParams.salesId"
+            :multiple="false"
+            clearable
+            allow-create
+            default-first-option
+            placeholder="请选择服务人员"
+          >
+            <el-option
+              v-for="item in waiterOptions"
+              :key="item.id"
+              :label="item.userName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-col>
+
+          <el-col :span="3">
+          <!-- 搜索框 -->
+          <el-input placeholder="请输入卡号" clearable v-model="queryParams.cardNumber">
+          </el-input>
+        </el-col>
+
+         <el-col :span="5">
+          <!-- 搜索框 -->
+          <el-input placeholder="请输入备注内容" clearable v-model="queryParams.remark">
+            <el-button slot="append" icon="el-icon-search"  @click="search"></el-button>
+          </el-input>
+        </el-col>
+
       </el-row>
       <el-table
         ref="multipleTable"
@@ -47,18 +150,23 @@
         :stripe="true"
         @selection-change="handleSelectionChange"
         :reserve-selection="true"
+        show-summary
       >
         <el-table-column label="编号" type="selection" width="40px"></el-table-column>
         <el-table-column label="编号" prop="id" width="60px"></el-table-column>
-        <el-table-column label="操作人员" prop="operatorName" width="100px"></el-table-column>
-        <el-table-column label="交易金额" prop="transactionAmount" width="60px"></el-table-column>
         <el-table-column label="交易时间" prop="transactionTime" width="180px"></el-table-column>
         <el-table-column label="交易类型" prop="type" width="100px"></el-table-column>
-        <el-table-column label="用途" prop="purpose" width="100px"></el-table-column>
+         <el-table-column label="交易金额" prop="transactionAmount" width="60px"></el-table-column>
+        <el-table-column label="用途" prop="purpose" width="150px"></el-table-column>
+         <el-table-column label="服务项目" prop="serviceName" width="150px"></el-table-column>
+         <el-table-column label="服务员工" prop="salesName" width="200px"></el-table-column>
+          <el-table-column label="员工提成" prop="employeePercentageAmount" width="60px"></el-table-column>
+           <el-table-column label="提成类型" prop="employeePercentageType" width="200px"></el-table-column>
         <el-table-column label="客户姓名" prop="customerName" width="150px"></el-table-column>
-        <el-table-column label="卡号" prop="cardNumber" width="150px"></el-table-column>
-        <el-table-column label="服务项目" prop="serviceName" width="150px"></el-table-column>
+        <el-table-column label="卡号" prop="cardNumber" width="250px"></el-table-column>
+        <el-table-column label="操作人员" prop="operatorName" width="200px"></el-table-column>
         <el-table-column label="备注信息" prop="remark" width="200px"></el-table-column>
+         
       </el-table>
 
       <!-- 分页区域 -->
@@ -66,7 +174,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryParams.currentPage"
-        :page-sizes="[5, 10,20, 30, 50]"
+        :page-sizes="[5, 10,20, 30, 50,500,1000,5000,10000]"
         :page-size="queryParams.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="transactionRecord.total"
@@ -155,6 +263,7 @@ export default {
   data() {
     return {
       servicePriceOptions: {},
+       
       queryParams: {
         startIndex: 0,
         pageSize: 5,
@@ -162,8 +271,117 @@ export default {
         queryString: "",
         currentPage: 1,
         type: "显示所有",
-        allStatus: "正常"
+        allStatus: "正常",
+        beginTime: "",
+        endTime: "",
+        cardNumber: "",
+        customerId: "",
+        employeePercentageType: "",
+        salesId : "",
+        operatorId :"",
+        serviceId:"",
+        serviceName:"",
+        remark: ""
       },
+      customerOptions: {},
+       waiterOptions: {},
+      allServicePriceOptions: {},
+       dateTimeValue: [],
+      //生日属性设置
+      dateTimePickerOptions: {
+        shortcuts: [
+          {
+            text: "今天",
+            onClick(picker) {
+             const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: "昨天",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: "一周前",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+           {
+            text: "两周前",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 14);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: "30天前",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: "90天前",
+            onClick(picker) {
+             const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: "半年前",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 180);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: "一年前",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 365);
+              picker.$emit('pick', [start, end]);
+            }
+          }
+        ]
+      },
+       employeePercentageTypeOptions: [
+        {
+          value: "手工项目提成",
+          label: "手工项目提成"
+        },
+        {
+          value: "产品销售提成",
+          label: "产品销售提成"
+        },
+        {
+          value: "储值卡提成",
+          label: "储值卡提成"
+        },
+        {
+          value: "无提成",
+          label: "无提成"
+        }
+      ],
       transactionRecord: { list: [], total: 0, multipleSelection: [] },
       addFormRules: {
         purpose: [
@@ -189,13 +407,20 @@ export default {
   created() {
     this.getTransactionRecordList();
     this.getServicePriceOptions();
+    this.getCustomerList();
+     this.getWaiterOptions();
+     this.getAllServicePriceOptions();
+    this.dateTimeValue=[this.getDateTime()+" 00:00:00",this.getDateTime()+" 23:59:59"];
   },
   methods: {
+     search() {
+     this.getTransactionRecordList();
+    },
     // 获取所有支出列表
     getServicePriceOptions() {
       this.$http
         .get("/api/rest/service_price/query_card_type?1=1", {
-          params: { servicePurposeType: "支出项目", queryString: "" }
+          params: { servicePurposeType: "3", queryString: "" }
         })
         .then(res => {
           if (res.status > 300) return this.messag.error("获取数据异常");
@@ -203,6 +428,9 @@ export default {
         });
     },
     getTransactionRecordList() {
+           this.queryParams.beginTime=this.dateTimeValue[0];
+      this.queryParams.endTime=this.dateTimeValue[1];
+      console.log("queryParams:",this.dateTimeValue,this.queryParams);
       this.$http
         .get("/api/rest/transaction_record/?1=1", { params: this.queryParams })
         .then(res => {
@@ -211,13 +439,63 @@ export default {
           this.transactionRecord.total = res.data.total;
           console.log(
             "getTransactionList",
-            this.transactionRecord.transactionRecordList
+            this.transactionRecord.list
           );
+        });
+    },
+      // 获取客户信息
+    getCustomerList() {
+      this.$http
+        .get("/api/rest/customer/?1=1", {
+          params: {
+            startIndex: 0,
+            pageSize: 50000000,
+            status: 1,
+            queryString: ""
+          }
+        })
+        .then(res => {
+          if (res.status != 200) return this.messag.error("获取数据异常");
+          this.customerOptions = res.data.data;
+        });
+    },
+     //获取所有技师
+    getWaiterOptions() {
+      this.$http
+        .get("/api/rest/employee/?1=1", {
+          params: {
+            startIndex: 0,
+            pageSize: 50000,
+            status: 1,
+            expirestime: "",
+            queryString: ""
+          }
+        })
+        .then(res => {
+          if (res.status != 200) return this.messag.error("获取数据异常");
+          this.waiterOptions = res.data.data;
+           
+        });
+    },
+        // 获取所有项目列表
+    getAllServicePriceOptions() {
+      this.$http
+        .get("/api/rest/service_price/query_card_type?1=1", {
+          params: { servicePurposeType: "", queryString: "" }
+        })
+        .then(res => {
+          if (res.status > 300) return this.messag.error("获取数据异常");
+          this.allServicePriceOptions = res.data.data;
         });
     },
      // 显示所有人状态 正常 或删除
     changeStatus() {
+      this.queryParams.startIndex=0;
       this.getTransactionRecordList();
+    },
+    //时间发生改变时触发
+    changeDateTimeChange(){
+      console.log("ChangeDateTimeChange",this.dateTimeValue);
     },
     // 监听pagesize改变
     handleSizeChange(newSize) {
@@ -314,6 +592,23 @@ export default {
       this.addForm.operatorName = JSON.parse(
         window.localStorage.getItem("currentLoginUser")
       );
+    },
+     // 时间格式
+    getDateTime() {
+      var t = new Date();
+      var year = t.getFullYear(),
+        month = t.getMonth() + 1,
+        day = t.getDate(),
+        hour = t.getHours(),
+        min = t.getMinutes(),
+        sec = t.getSeconds();
+      var newTime =
+        year +
+        "-" +
+        (month < 10 ? "0" + month : month) +
+        "-" +
+        (day < 10 ? "0" + day : day) ;
+      return newTime;
     }
   }
 };

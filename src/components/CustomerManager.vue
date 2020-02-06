@@ -103,8 +103,64 @@
               size="mini"
               @click="handelCardDialogAddVisibleShow"
             >添加</el-button>
-            <el-collapse accordion>
-              <!-- //循环显示会员卡 -->
+
+            <el-table
+              :data="scope.row.cards"
+              :border="true"
+              :highlight-current-row="true"
+              :stripe="true"
+              @selection-change="handleSelectionChange"
+              :reserve-selection="true"
+            v-if="addForm.expandChangeHidenAreaShow" 
+            >
+
+             <!-- @expand-change="expandChangeHidenArea" -->
+              <el-table-column label="编号" type="index" width="60px"></el-table-column>
+              <el-table-column label="卡号" prop="cardNumber"></el-table-column>
+              <el-table-column label="卡名称" prop="cardTypeName"></el-table-column>
+              <el-table-column label="余额" prop="balance"></el-table-column>
+              <el-table-column label="剩余次数" prop="surplusCount"></el-table-column>
+              <!-- <el-table-column label="折扣" prop="discount"></el-table-column> -->
+              <el-table-column label="最后充值金额" prop="lastRecharge"></el-table-column>
+              <el-table-column label="最后充值时间" prop="lastRechargeTime" width="180px"></el-table-column>
+              <el-table-column label="累计充值金额" prop="cumulativeRecharge"></el-table-column>
+              <el-table-column label="备注" prop="remark"></el-table-column>
+
+            <el-table-column label="操作" width="190px">
+          <template slot-scope="scope">
+            <el-tooltip effect="dark" content="修改" placement="top" :enterable="false">
+              <el-button
+                type="warning"
+                icon="el-icon-edit-outline"
+                size="mini"
+                @click="handelCardDialogVisibleUpdateShowRow(scope.row)"
+              ></el-button>
+            </el-tooltip>
+
+            <el-tooltip effect="dark" content="删除" placement="top" :enterable="false">
+              <el-button
+                type="danger"
+                icon="el-icon-document-delete"
+                size="mini"
+                @click="handelConfirmDeleteCard(scope.row)"
+              ></el-button>
+            </el-tooltip>
+
+            <el-tooltip effect="dark" content="充值" placement="top" :enterable="false">
+              <el-button
+                type="primary"
+                icon="el-icon-shopping-cart-full"
+                size="mini"
+                @click="handelCardDialogVisibleRechargeCardShow(scope.row)"
+              ></el-button>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+
+            </el-table>
+
+            <!-- //循环显示会员卡 -->
+            <!-- <el-collapse accordion>
               <div v-for="(item,i) in scope.row.cards" :key="item.id">
                 <el-collapse-item>
                   <template slot="title">
@@ -190,7 +246,8 @@
                   </el-button-group>
                 </el-collapse-item>
               </div>
-            </el-collapse>
+            </el-collapse> 
+            -->
           </template>
         </el-table-column>
       </el-table>
@@ -390,6 +447,27 @@
             </el-col>
           </el-row>
 
+           <el-row>
+            <el-col :span="8">
+              <el-form-item label="支付类型">
+                <el-select
+                  v-model="addHidenForm.payType"
+                  :multiple="false"
+                  filterable
+                  default-first-option
+                  placeholder="请选择支付类型"
+                >
+                  <el-option
+                    v-for="item in payTypeOptions"
+                    :key="item.id"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
           <el-form-item label="描述信息">
             <el-input v-model="addHidenForm.remark" placeholder="请输入描述信息"></el-input>
           </el-form-item>
@@ -458,7 +536,8 @@ export default {
         //备注
         remark: "",
         cardList: [],
-        disabled: false
+        disabled: false,
+        expandChangeHidenAreaShow: true
       },
       currentRow: {},
       customer: { customerList: [], total: 0, multipleSelection: [] },
@@ -502,15 +581,17 @@ export default {
       addHidenForm: {
         id: 0,
         cardNumber: "8888888888",
-        cardTypeId: 3,
+        cardTypeId: 1,
         servicePriceId: 1,
         servicePriceName: "其他卡",
         discount: 0,
         balance: 18,
         surplusCount: 1,
-        sales:{},
+        sales: {},
         lastRecharge: 110,
         remark: "",
+        payType: "3",
+        disabledPayType: false,
         disabledRecharge: false,
         disabledBalance: false
       },
@@ -519,6 +600,45 @@ export default {
       cardTypeOptions: {},
       salesOptions: {},
       servicePriceOptions: {},
+      //支付类型
+       payTypeOptions: [
+        {
+          value: "1",
+          label: "现金"
+        },
+        {
+          value: "2",
+          label: "支付宝"
+        },
+        {
+          value: "3",
+          label: "微信支付"
+        },
+        {
+          value: "4",
+          label: "美团"
+        },
+        {
+          value: "5",
+          label: "携程"
+        },
+        {
+          value: "6",
+          label: "QQ钱包"
+        },
+        {
+          value: "7",
+          label: "京东"
+        },
+        {
+          value: "8",
+          label: "云闪付"
+        },
+        {
+          value: "9",
+          label: "Ipay"
+        }
+      ],
       //当前会员卡的类型
       currentCardType: {},
       //   当前会员卡的消费类型
@@ -802,10 +922,13 @@ export default {
         })
         .then(res => {
           if (res.status != 200) return this.messag.error("获取数据异常");
+          
           this.currentRow.cards = res.data.data;
+           this.addForm.expandChangeHidenAreaShow=false;
           this.$nextTick(() => {
-            console.log("重新刷新v-for没生效。。。需要再排查");
-            this.$refs.multipleTable.doLayout();
+           this.addForm.expandChangeHidenAreaShow=true;
+            // console.log("重新刷新v-for没生效。。。需要再排查");
+            // this.$refs.multipleTable.doLayout();
             this.$forceUpdate();
           });
         });
@@ -817,6 +940,7 @@ export default {
       this.addHidenForm.disabled = false;
       this.addHidenForm.disabledRecharge = false;
       this.addHidenForm.disabledBalance = false;
+      this.addHidenForm.balance=0;
     },
 
     // 修改前的显示
@@ -836,6 +960,7 @@ export default {
       this.addHidenForm.disabled = false;
       this.addHidenForm.disabledRecharge = false;
       this.addHidenForm.disabledBalance = false;
+      this.addHidenForm.balance=0;
     },
     //关闭之后的情况表单
     handleCardDialogClose(done) {
@@ -990,6 +1115,8 @@ export default {
           if (this.currentCardType.valuationUnit == "金额") {
             this.addHidenForm.surplusCount = 0;
             this.addHidenForm.disabledBalance = false;
+            // 会员卡折扣为VIP价格
+             this.addHidenForm.discount=this.currentCardType.vipPrice;
           }
           //如果计数单位为次数，则充值金额为0
           else {

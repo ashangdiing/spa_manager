@@ -51,7 +51,7 @@ export default {
       form: {
         userName: "admin ",
         password: "admin01",
-        rememberMe: "true",
+        rememberMe: false,
         verificationCode: "1"
       }
       // ruleForm: {
@@ -65,8 +65,23 @@ export default {
       // }
     };
   },
+  created() {
+      
+     this.form.rememberMe=Storage.localGet("rememberMe");
+     if(this.form.rememberMe==undefined)
+        this.form.rememberMe=false;
+  },
   methods: {
     submitForm(formName) {
+        console.log(" this.form.rememberMe:::", this.form.rememberMe)
+      //设置本次登录是否记住
+      Storage.localSet("rememberMe", this.form.rememberMe);
+        if(Storage.localGet("rememberMe")){
+           router.push("/index");
+           return ;
+        }
+        console.log("rememberMe------------------------>>>>",this.form.rememberMe);
+
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.$http
@@ -93,19 +108,42 @@ export default {
       if (data.result != "SUCCESS") {
         this.$messag.error(data.info);
       } else {
-        // window.localStorage.setItem("authorization", headers.authorization);
         let authorizationInfo={};
         authorizationInfo.authorization=headers.authorization;
         Storage.localSet("authorizationInfo", authorizationInfo);
-        // window.localStorage.setItem("currentLoginUser", JSON.stringify(data.data));
         Storage.localSet("currentLoginUser", data.data);
+        Storage.localSet("rememberMe", this.form.rememberMe);
         router.push("/index");
         this.$messag.success(data.info);
       }
     },
     resetForm(formName) {
       //   this.$refs[formName].resetFields();
-    }
+    },
+        getDateTime() {
+      var t = new Date();
+      var year = t.getFullYear(),
+        month = t.getMonth() + 1,
+        day = t.getDate(),
+        hour = t.getHours(),
+        min = t.getMinutes(),
+        sec = t.getSeconds();
+      var newTime =
+        year +
+        "-" +
+        (month < 10 ? "0" + month : month) +
+        "-" +
+        (day < 10 ? "0" + day : day) +
+        " " +
+        (hour < 10 ? "0" + hour : hour) +
+        ":" +
+        (min < 10 ? "0" + min : min) +
+        ":" +
+        (sec < 10 ? "0" + sec : sec);
+
+      console.log("clock" + newTime);
+      return newTime;
+    },
   }
 };
 </script>

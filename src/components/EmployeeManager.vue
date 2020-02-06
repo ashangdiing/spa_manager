@@ -57,8 +57,8 @@
       >
         <el-table-column label="编号" type="selection" width="60px"></el-table-column>
         <el-table-column label="编号" type="index" width="60px"></el-table-column>
-        <el-table-column label="姓名" prop="userName"></el-table-column>
-        <el-table-column label="账户" prop="userId" width="180px"></el-table-column>
+        <el-table-column label="姓名" prop="custName"></el-table-column>
+        <el-table-column label="账户" prop="userName" width="180px"></el-table-column>
         <el-table-column label="证件号码" prop="passportNumber" width="180px"></el-table-column>
         <el-table-column label="生日" prop="birthday" width="100px"></el-table-column>
         <el-table-column label="手机号码" prop="phone" width="120px"></el-table-column>
@@ -141,11 +141,11 @@
           label-width="80px"
           :disabled="addForm.disabled"
         >
-          <el-form-item label="姓名" prop="userName">
-            <el-input v-model="addForm.userName"></el-input>
+          <el-form-item label="姓名" prop="custName">
+            <el-input v-model="addForm.custName"></el-input>
           </el-form-item>
-          <el-form-item label="账号" prop="userId">
-            <el-input v-model="addForm.userId" :disabled="addForm.userIdDisabled"></el-input>
+          <el-form-item label="账号" prop="userName">
+            <el-input v-model="addForm.userName" :disabled="addForm.userNameDisabled"></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="newPassword">
             <el-input v-model="addForm.newPassword" type="password"></el-input>
@@ -353,7 +353,7 @@ export default {
       addForm: {
         id: 0,
         userName: "dengwei",
-        userId: "dengwei",
+        custName: "dengwei",
         newPassword: "@dmin01",
         email: "154926882@qq.com",
         phone: "18627283311",
@@ -361,6 +361,7 @@ export default {
         sex: 1,
         statusType: "1",
         status: "1",
+        remark: "1",
         expiresTime: "",
         passportNumber: "421088198509113322",
         leaveOficeTime: "",
@@ -374,16 +375,12 @@ export default {
       employee: { employeeList: [], total: 0 },
       dialog: { dialogVisible: false, title: "添加" },
       passportNumberDisabled: false,
-      userIdDisabled: false,
+      userNameDisabled: false,
       roleOptions: [],
       // 多选参数接受属性
       multipleSelection: [],
       addFormRules: {
         userName: [
-          { required: true, message: "请输入用户名", trigger: "blur" },
-          { min: 5, max: 40, message: "长度在 5 到 40 个字符", trigger: "blur" }
-        ],
-        userId: [
           { required: false, message: "请输入账号", trigger: "blur" },
           {
             min: 5,
@@ -429,11 +426,11 @@ export default {
           }
         ],
         age: [
-          { required: true, message: "年龄不能为空" },
+          { required: false, message: "年龄不能为空" },
           { type: "number", message: "年龄必须为数字值" }
         ],
         email: [
-          { required: true, message: "请输入邮箱", trigger: "blur" },
+          { required: false, message: "请输入邮箱", trigger: "blur" },
           {
             min: 5,
             max: 50,
@@ -688,7 +685,7 @@ export default {
       this.dialog.dialogVisible = true;
       this.addForm.disabled = false;
       this.addForm.passportNumberDisabled = false;
-      this.addForm.userIdDisabled = false;
+      this.addForm.userNameDisabled = false;
       this.addForm.status = 1;
     },
     // 显示当前数据
@@ -705,7 +702,7 @@ export default {
       this.dialogInitRow(row);
       this.addForm.disabled = false;
       this.addForm.passportNumberDisabled = true;
-      this.addForm.userIdDisabled = true;
+      this.addForm.userNameDisabled = true;
     },
     // 确认删除
     handelConfirmDelete(row) {
@@ -818,7 +815,8 @@ export default {
     dialogInitRow(row) {
       this.addForm.id = row.id;
       this.addForm.userName = row.userName;
-      this.addForm.userId = row.userId;
+       this.addForm.custName = row.custName;
+      this.addForm.remark = row.remark;
       this.addForm.newPassword = row.newPassword;
       this.addForm.email = row.email;
       this.addForm.phone = row.phone;

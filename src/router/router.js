@@ -8,11 +8,12 @@ import Workbench from '.././components/Workbench.vue'
 import CustomerManager from '.././components/CustomerManager.vue'
 import RoleManager from '.././components/RoleManager.vue'
 import Transaction from '.././components/Transaction.vue'
-import DayReport from '.././components/DayReport.vue'
+ 
 import WorkOrderManager from '.././components/WorkOrderManager.vue'
-
-import MonthReport from '.././components/MonthReport.vue'
 import ProjectManager from '.././components/ProjectManager.vue'
+
+import ReportPercentage from '.././components/ReportPercentage.vue'
+import ReportGainings from '.././components/ReportGainings.vue'
 import Storage from '@/utils/globalStore.js' // storage工具类，简单的封装
 Vue.use(VueRouter)
 
@@ -66,12 +67,12 @@ var vRouter = new VueRouter({
         }
         ,
         {
-          path: '/dayReport',
-          component: DayReport
+          path: '/reportPercentage',
+          component: ReportPercentage
         },
         {
-          path: '/monthReport',
-          component: MonthReport
+          path: '/reportGainings',
+          component: ReportGainings
         },
         {
           path: '/projectManager',

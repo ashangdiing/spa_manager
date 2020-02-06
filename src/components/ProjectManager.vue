@@ -111,7 +111,11 @@
           <el-form-item label="编号" v-show="addForm.idShow">
             <el-input v-model="addForm.id"></el-input>
           </el-form-item>
-          <el-form-item :label="addForm.serviceNameLabel" prop="serviceName" v-show="addForm.serviceNameShow">
+          <el-form-item
+            :label="addForm.serviceNameLabel"
+            prop="serviceName"
+            v-show="addForm.serviceNameShow"
+          >
             <el-input v-model="addForm.serviceName" placeholder="请输入项目名字"></el-input>
           </el-form-item>
           <el-row v-show="addForm.serviceTypeShow">
@@ -200,7 +204,10 @@
           </el-row>
 
           <el-row v-show="addForm.employeePercentageAmountShow">
-            <el-form-item :label="addForm.employeePercentageAmountLabel" prop="employeePercentageAmount">
+            <el-form-item
+              :label="addForm.employeePercentageAmountLabel"
+              prop="employeePercentageAmount"
+            >
               <el-col :span="5">
                 <el-input-number
                   v-model.number="addForm.employeePercentageAmount"
@@ -245,6 +252,7 @@
                   allow-create
                   default-first-option
                   placeholder="用途类别"
+                  @change="servicePurposeTypeChange"
                 >
                   <el-option
                     v-for="item in servicePurposeTypeOptions"
@@ -255,7 +263,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-          </el-row >
+          </el-row>
           <el-form-item label="备注信息">
             <el-input v-model="addForm.remark"></el-input>
           </el-form-item>
@@ -273,6 +281,15 @@
 <script>
 import qs from "qs";
 export default {
+    watch: {
+    queryParams: {
+      //深度监听，可监听到对象、数组的变化
+      handler(val, oldVal) {
+        this.getServicePriceList();
+      },
+      deep: true
+    }
+  },
   data() {
     return {
       queryParams: {
@@ -499,44 +516,62 @@ export default {
     // 服务类型的改变
     serviceTypeChange() {
       if (this.addForm.serviceType.indexOf("VIP卡") > -1) {
-        this.addForm.serviceNameShow= true,
-        this.addForm.standardPriceShow= false;
+        (this.addForm.serviceNameShow = true),
+          (this.addForm.standardPriceShow = false);
         // 促销价格
-        this.addForm.promotionPriceShow= false;
+        this.addForm.promotionPriceShow = false;
         // 计价单位
-        this.addForm.valuationUnitShow= true;
+        this.addForm.valuationUnitShow = true;
         //		vip价格
-        this.addForm.vipPriceShow= true;
+        this.addForm.vipPriceShow = true;
         // 员工提成百分比
-        this.addForm.employeePercentageAmountShow= true;
+        this.addForm.employeePercentageAmountShow = true;
         // 员工提成类别。 物品和手工
-        this.addForm.employeePercentageTypeShow= true;
+        this.addForm.employeePercentageTypeShow = true;
         // 项目用途类别
-        this.addForm.servicePurposeTypeShow= true;
-      }else {
-        this.addForm.serviceNameShow= true,
-        this.addForm.standardPriceShow= true;
+        this.addForm.servicePurposeTypeShow = true;
+      } else {
+        (this.addForm.serviceNameShow = true),
+          (this.addForm.standardPriceShow = true);
         // 促销价格
-        this.addForm.promotionPriceShow= false;
+        this.addForm.promotionPriceShow = false;
         // 计价单位
-        this.addForm.valuationUnitShow= false;
+        this.addForm.valuationUnitShow = false;
         //		vip价格
-        this.addForm.vipPriceShow= false;
+        this.addForm.vipPriceShow = false;
         // 员工提成百分比
-        this.addForm.employeePercentageAmountShow= true;
+        this.addForm.employeePercentageAmountShow = true;
         // 员工提成类别。 物品和手工
-        this.addForm.employeePercentageTypeShow= true;
+        this.addForm.employeePercentageTypeShow = true;
         // 项目用途类别
-        this.addForm.servicePurposeTypeShow= false;
+        this.addForm.servicePurposeTypeShow = true;
       }
     },
     // 卡片计价类型的改变
-    valuationUnitChange(){
-       if (this.addForm.valuationUnit.indexOf("次数") > -1) {
-          this.addForm.vipPriceLabel="会员价格";
-       }else{
-           this.addForm.vipPriceLabel="折扣比率";
-       }
+    valuationUnitChange() {
+      if (this.addForm.valuationUnit.indexOf("次数") > -1) {
+        this.addForm.vipPriceLabel = "会员价格";
+      } else {
+        this.addForm.vipPriceLabel = "折扣比率";
+      }
+    },
+    // 用途类别发生变化
+    servicePurposeTypeChange() {
+      if (this.addForm.serviceType.indexOf("VIP卡") > -1) {
+        // 将选中项目基本价格信息赋给VIP卡
+        console.log(
+          "this.addForm.servicePurposeType id:",
+          this.addForm.servicePurposeType
+        );
+        this.servicePurposeTypeOptions.forEach((item, index, arr) => {
+          if (item.id == this.addForm.servicePurposeType) {
+            //标准金额
+            this.addForm.standardPrice = item.standardPrice;
+            // 促销价格
+            this.addForm.promotionPrice = item.promotionPrice;
+          }
+        });
+      }
     },
     //对话框提交按钮
     dialogSubmit() {
@@ -582,8 +617,11 @@ export default {
                 return this.$messag.error(
                   "添加项目失败：未知异常，resultStatusCode:" + res.status
                 );
+                console.log("res.data.data:",res.data);
+                if(res.data.result=="SUCCESS"){
               this.$messag.success("添加项目信息成功");
               this.getServicePriceList();
+              }else this.$messag.error("添加失败"+res.data.description);
             });
         } else {
           this.$messag.error("填写的信息,校验不通过");

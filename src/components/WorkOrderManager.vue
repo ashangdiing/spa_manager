@@ -74,14 +74,14 @@
 
         <el-table-column label="操作" width="190px">
           <template slot-scope="scope">
-            <el-tooltip effect="dark" content="编辑工单信息" placement="top" :enterable="false">
+            <!-- <el-tooltip effect="dark" content="编辑工单信息" placement="top" :enterable="false">
               <el-button
                 type="warning"
                 icon="el-icon-edit"
                 size="mini"
                 @click="handelDialogVisibleUpdateShowRow(scope.row)"
               ></el-button>
-            </el-tooltip>
+            </el-tooltip> -->
 
             <el-tooltip effect="dark" content="删除工单信息" placement="top" :enterable="false">
               <el-button
@@ -92,14 +92,14 @@
               ></el-button>
             </el-tooltip>
 
-            <el-tooltip effect="dark" content="查看工单信息" placement="top" :enterable="false">
+            <!-- <el-tooltip effect="dark" content="查看工单信息" placement="top" :enterable="false">
               <el-button
                 type="primary"
                 icon="el-icon-magic-stick"
                 size="mini"
                 @click="handelDialogVisibleShowRow(scope.row)"
               ></el-button>
-            </el-tooltip>
+            </el-tooltip> -->
           </template>
         </el-table-column>
       </el-table>
@@ -139,7 +139,10 @@ export default {
         currentPage: 1,
         allStatus: "正常"
       },
-      workOrder: { workOrderList: [], total: 0, multipleSelection: [] }
+      workOrder: { workOrderList: [], total: 0, multipleSelection: [] },
+        addForm: {
+        id: 0,
+      },
     };
   },
   created() {
@@ -154,6 +157,29 @@ export default {
           this.workOrder.workOrderList = res.data.data;
           this.workOrder.total = res.data.total;
           console.log("getWorkOrderList", this.workOrder.workOrderList);
+        });
+    },
+     // 确认删除
+    handelConfirmDelete(row) {
+      this.$confirm("确认删除？")
+        .then(_ => {
+          // 如果确认则删除
+          this.handelDelete(row);
+        })
+        .catch(_ => {});
+    },
+     // 执行删除
+    handelDelete(row) {
+      console.log("WorkOrder:",row);
+      // 删除客户信息
+      this.$http
+        .put("/api/rest/work_order/soft_delete/" + row.id, this.addForm)
+        .then(res => {
+          // console.log(res);
+          if (res.status > 300)
+            return this.$messag.error(  "删除失败：未知异常，resultStatusCode" + res.status  );
+          this.getWorkOrderList();
+          this.$messag.success("删除成功");
         });
     },
     // 监听pagesize改变
