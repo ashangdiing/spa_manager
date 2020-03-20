@@ -352,6 +352,7 @@
                   @change="cardTypeChange"
                   v-model="addHidenForm.cardTypeId"
                   placeholder="请选择卡片类型"
+                   :disabled="addHidenForm.cardTypeDisabled"
                 >
                   <el-option
                     v-for="(item) in cardTypeOptions"
@@ -386,7 +387,7 @@
 
           <el-row>
             <el-col :span="5">
-              <el-form-item label="充值金额">
+              <el-form-item   :label="addHidenForm.balanceLabel">
                 <el-input-number
                   v-model.number="addHidenForm.balance"
                   :min="0"
@@ -400,7 +401,7 @@
 
           <el-row v-show="currentCardType.valuationUnit=='次数'">
             <el-col :span="5">
-              <el-form-item label="充值次数">
+              <el-form-item :label="addHidenForm.surplusCountLabel">
                 <el-input-number
                   v-model.number="addHidenForm.surplusCount"
                   :min="0"
@@ -544,7 +545,7 @@ export default {
       addFormRules: {
         customerName: [
           { required: true, message: "请输入用户名", trigger: "blur" },
-          { min: 3, max: 30, message: "长度在 3 到 30 个字符", trigger: "blur" }
+          { min: 2, max: 30, message: "长度在 2 到 30 个字符", trigger: "blur" }
         ],
         passportNumber: [
           { required: false, message: "请输入身份证号码", trigger: "blur" },
@@ -585,15 +586,18 @@ export default {
         servicePriceId: 1,
         servicePriceName: "其他卡",
         discount: 0,
-        balance: 18,
-        surplusCount: 1,
+        balance: 0,
+        balanceLabel: "充值金额",
+        surplusCount: 0,
+        surplusCountLabel: "充值次数",
         sales: {},
         lastRecharge: 110,
         remark: "",
         payType: "3",
         disabledPayType: false,
         disabledRecharge: false,
-        disabledBalance: false
+        disabledBalance: false,
+        cardTypeDisabled: false
       },
       cardDialog: { dialogVisible: false, title: "添加" },
       card: { cardList: [], total: 0 },
@@ -936,31 +940,45 @@ export default {
     // 显示添加对话框
     handelCardDialogAddVisibleShow() {
       this.cardDialog.title = "客户添加会员卡";
+      this.addHidenForm.balanceLabel="充值金额";
+      this.addHidenForm.surplusCountLabel="充值次数";
       this.cardDialog.dialogVisible = true;
       this.addHidenForm.disabled = false;
       this.addHidenForm.disabledRecharge = false;
       this.addHidenForm.disabledBalance = false;
+      this.addHidenForm.cardTypeDisabled=false;
       this.addHidenForm.balance=0;
+      this.addHidenForm.id=0;
+      this.cardTypeChange(card.cardTypeId);
     },
 
     // 修改前的显示
     handelCardDialogVisibleUpdateShowRow(card) {
       this.copyDataToAddHidenForm(card);
       this.cardDialog.title = "修改客户会员卡";
+      this.addHidenForm.balanceLabel="剩余余额";
+      this.addHidenForm.surplusCountLabel="剩余次数";
       this.cardDialog.dialogVisible = true;
       this.addHidenForm.disabled = false;
+      this.addHidenForm.cardTypeDisabled=true;
       this.addHidenForm.disabledRecharge = true;
       this.addHidenForm.disabledBalance = true;
+      this.cardTypeChange(card.cardTypeId);
     },
     // 充值卡展示
     handelCardDialogVisibleRechargeCardShow(card) {
       this.copyDataToAddHidenForm(card);
       this.cardDialog.title = "充值会员卡";
+      this.addHidenForm.balanceLabel="充值金额";
+      this.addHidenForm.surplusCountLabel="充值次数";
       this.cardDialog.dialogVisible = true;
       this.addHidenForm.disabled = false;
+      this.addHidenForm.cardTypeDisabled=true;
       this.addHidenForm.disabledRecharge = false;
       this.addHidenForm.disabledBalance = false;
       this.addHidenForm.balance=0;
+      console.log(card);
+      this.cardTypeChange(card.cardTypeId);
     },
     //关闭之后的情况表单
     handleCardDialogClose(done) {
@@ -988,14 +1006,19 @@ export default {
         if (valid) {
           this.addHidenForm.customer = this.addForm;
           this.addHidenForm.cardNumber = "";
-          if (this.currentServicePrice.valuationUnit == "金额") {
+           console.log("this.addHidenForm.balance:",this.addHidenForm.balance);
+              console.log("this.currentCardType:",this.currentCardType);
+          if (this.currentCardType.valuationUnit.indexOf("金额") > -1 ||this.currentCardType.valuationUnit.indexOf("折扣") > -1) {
             //充值金额,次数变为0
-            this.addHidenForm.surplusCount = 0;
+             this.addHidenForm.surplusCount = 0;
+            this.addHidenForm.disabledBalance = false;
+            
           } else {
-            // 充值次数,金额转为对应的项目总值
+            // 充值次数,金额转为对应的项目总值,次数x卡片类型的vip价格
             this.addHidenForm.balance =
               this.addHidenForm.surplusCount *
-              this.currentServicePrice.standardPrice;
+              this.currentCardType.vipPrice;
+                this.addHidenForm.disabledBalance = true;
           }
           // 添加卡信息
           this.$http.post("/api/rest/card/", this.addHidenForm).then(res => {
@@ -1099,29 +1122,33 @@ export default {
       this.addHidenForm.surplusCount = card.surplusCount;
     },
     // 卡类型变化
-    cardTypeChange(cardId) {
+    cardTypeChange(cardTypeId) {
+      console.log("-------------------->>",cardTypeId,this.cardTypeOptions);
       this.cardTypeOptions.forEach((item, index, arr) => {
-        if (cardId == item.id) {
+        if (cardTypeId == item.id) {
           this.currentCardType = item;
-
+           console.log("-------------------->>11>>aa1", this.currentCardType);
           this.addHidenForm.servicePriceId = Number(
             this.currentCardType.servicePurposeType
           );
           this.servicePriceChange(this.addHidenForm.servicePriceId);
-          this.addHidenForm.balance = 0;
-          this.addHidenForm.surplusCount = 0;
-          console.log("currentCardType", this.currentCardType);
-          //如果计数单位为金额则，充值次数为0
-          if (this.currentCardType.valuationUnit == "金额") {
+          
+          console.log("currentCardType-->1", this.currentCardType);
+          if (this.cardDialog.title.indexOf("充值") > -1 || this.cardDialog.title.indexOf("添加") > -1){
+             this.addHidenForm.balance = 0;
             this.addHidenForm.surplusCount = 0;
-            this.addHidenForm.disabledBalance = false;
-            // 会员卡折扣为VIP价格
-             this.addHidenForm.discount=this.currentCardType.vipPrice;
-          }
-          //如果计数单位为次数，则充值金额为0
-          else {
-            this.addHidenForm.disabledBalance = true;
-          }
+                //如果计数单位为金额则，充值次数为0
+                if (this.currentCardType.valuationUnit.indexOf("金额") > -1 ||this.currentCardType.valuationUnit.indexOf("折扣") > -1) {
+                  this.addHidenForm.surplusCount = 0;
+                  this.addHidenForm.disabledBalance = false;
+                  // 会员卡折扣为VIP价格
+                  this.addHidenForm.discount=this.currentCardType.vipPrice;
+                }
+                //如果计数单位为次数，则充值金额为0
+                else {
+                  this.addHidenForm.disabledBalance = true;
+                }
+         }
         }
       });
     },
@@ -1147,7 +1174,7 @@ export default {
     surplusCountChange() {
       //充值金额= 次数* 标准价格
       this.addHidenForm.balance =
-        this.addHidenForm.surplusCount * this.currentServicePrice.standardPrice;
+        this.addHidenForm.surplusCount * this.currentCardType.vipPrice;
     }
   }
 };

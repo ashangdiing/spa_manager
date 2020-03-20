@@ -11,7 +11,7 @@ export default function () {
         // console.log(authorizationInfo, 'authorizationInfo');
         if (authorizationInfo) {
             // 把token加入到默认请求参数中
-            config.headers.common['Authorization'] = authorizationInfo.authorization;
+            config.headers.common['Authorization'] = authorizationInfo;
         }
         return config
     }, function (error) {

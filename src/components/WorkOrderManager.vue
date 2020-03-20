@@ -25,9 +25,9 @@
         </el-col>
       </el-row>
       <!-- 工具区 -->
-      <el-row class="tools">
+      <el-row class="tools" >
         <el-col :span="2">
-          <el-button type="danger">删除选中</el-button>
+          <el-button type="danger" v-if="false">删除选中</el-button>
         </el-col>
       </el-row>
       <!-- 列表区 -->

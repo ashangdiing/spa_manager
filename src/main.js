@@ -8,7 +8,9 @@ import router from './router/router.js'
 import axios from "axios"
 import httpAxios from "./utils/httpAxios.js"
 Vue.prototype.$http=axios
-// axios.defaults.baseURL="http://127.0.0.1:9801/"
+// ***********************************************************************************************
+// 部署时需要设置 axios.defaults.baseURL ，不使用代理。开发时代理使用这行会出现跨域问题
+// axios.defaults.baseURL= process.env.SP_MANAGER_API
 axios.defaults.headers['Content-Type'] = 'application/json';
 Vue.use(ElementUI)
 Vue.use(httpAxios)

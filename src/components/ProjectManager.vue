@@ -47,8 +47,8 @@
         <el-table-column label="项目编号" prop="id" width="80px"></el-table-column>
         <el-table-column label="标准价格" prop="standardPrice"></el-table-column>
         <!-- <el-table-column label="促销价格" prop="promotionPrice" width="80px"></el-table-column> -->
-        <el-table-column label="会员价格" prop="vipPrice" width="80px"></el-table-column>
-        <el-table-column label="提成价格" prop="employeePercentageAmount" width="80px"></el-table-column>
+        <el-table-column label="会员价格\折扣" prop="vipPrice" width="80px"></el-table-column>
+        <el-table-column label="提成比例" prop="employeePercentageAmount" width="80px"></el-table-column>
         <!-- <el-table-column label="项目用途" prop="servicePurposeType" width="80px"></el-table-column> -->
         <el-table-column label="备注" prop="remark" width="200px"></el-table-column>
         <el-table-column label="操作" width="190px">
@@ -147,7 +147,7 @@
                 <el-input-number
                   v-model.number="addForm.standardPrice"
                   :step="20"
-                  :min="20"
+                  :min="0"
                   autocomplete="off"
                 ></el-input-number>
               </el-col>
@@ -160,7 +160,7 @@
                 <el-input-number
                   v-model.number="addForm.promotionPrice"
                   :step="20"
-                  :min="20"
+                  :min="0"
                   autocomplete="off"
                 ></el-input-number>
               </el-col>
@@ -173,7 +173,7 @@
                 <el-input-number
                   v-model.number="addForm.vipPrice"
                   :step="20"
-                  :min="20"
+                  :min="0"
                   autocomplete="off"
                 ></el-input-number>
               </el-col>
@@ -316,7 +316,7 @@ export default {
         // 员工提成百分比
         employeePercentageAmount: 10,
         // 员工提成类别。 物品和手工
-        employeePercentageType: "手工项目提成",
+        employeePercentageType: "",
         // 项目用途类别
         servicePurposeType: 1,
         //备注

@@ -316,11 +316,11 @@ export default {
             return callBack(new Error( "VIP卡" +  serviceRecordVipCard.cardNumber + "没有绑定VIP卡的卡片类型，请到会员卡管理先绑定"));
           }
 
-          console.log( "serviceRecordVipCard.servicePriceCardType:" +  serviceRecordVipCard.servicePriceCardType  );
+          console.log( "serviceRecordVipCard.servicePriceCardType:" , serviceRecordVipCard.servicePriceCardType  );
 
           if (  serviceRecordVipCard.servicePriceCardType.valuationUnit.indexOf( "次数" ) > -1  ) {
             // 次卡价格变为标准价格，并且不能修改
-            this.currentSelectServiceRecord.servicePrice.promotionPrice=serviceRecordServicePrice.standardPrice;
+            this.currentSelectServiceRecord.servicePrice.promotionPrice=serviceRecordVipCard.servicePriceCardType.vipPrice;
             this.currentSelectServiceRecord.servicePrice.promotionPriceDisabled=true;
             // 如果是次卡  ,用途与项目服务价格不同提示无法用该卡付款
             if (  serviceRecordVipCard.servicePriceId != serviceRecordServicePrice.id ) {
@@ -402,22 +402,22 @@ export default {
         operator: { userName: "11" },
         beginTime: "new Date()",
         totalServiceTime: 0,
-        customer: { id: "0", customerName: "刘柳", phone: "13111111" },
+        customer: { id: "0", customerName: "", phone: "" },
         customerIsVip: "false",
         serviceRecords: [
           {
             id: "",
             beginTime: new Date(),
             waiter: { id: "", userName: "" },
-            serviceTime: 100,
+            serviceTime: 0,
             vipCard: { id: "", cardNumber: "" },
              
             servicePrice: {
               id: "",
               serviceType: "",
               serviceName: "",
-              standardPrice: 110,
-              promotionPrice: 100,
+              standardPrice: 0,
+              promotionPrice: 0,
               promotionPriceDisabled: false,
               employeePercentageAmount: 0,
               remark: ""
@@ -712,10 +712,10 @@ export default {
         vipCard: { id: "0", cardNumber: "" },
         servicePrice: {
           id: "",
-          serviceType: "项目1",
-          serviceName: "按摩",
-          standardPrice: 110,
-          promotionPrice: 100,
+          serviceType: "",
+          serviceName: "",
+          standardPrice: 0,
+          promotionPrice: 0,
           remark:""
         }
       });
